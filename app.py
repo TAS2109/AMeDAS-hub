@@ -2,8 +2,8 @@
   起動:    uvicorn app:app --host 0.0.0.0 --port $PORT     （または python app.py）
   診断:    ブラウザで /api/live/diag（実況の取得元）・ /api/fdiag（予報の取得元）
 画面: 1ページ・地図共有の3タブ構成。
-  ① 観測   アメダス（風速・瞬間風速・気圧・雨量）。台風が発生中なら「自動」で台風の周辺に範囲を絞る。海岸近くの地点には波の高さ（推計）を重ねる。
-  ② 警報   気象庁の新体系(2026年5月〜: 警報/危険警報/特別警報)の r8/map.json。1次細分区域・市町村等ごとに薄く塗る。
+  ① 観測   アメダス（風速・瞬間風速・気圧・雨量）。全国の観測値。海岸近くの地点には波の高さ（推計）を重ねる。台風の情報は出さない。
+  ② 警報   気象庁の新体系(2026年5月〜: 警報/危険警報/特別警報)の r8/map.json。全種類の警報・注意報を、1次細分区域・市町村等ごとに薄く塗る。
            地図の形(GeoJSON)は /api/live/geo/{name} で気象庁から取得し、サーバーに24時間キャッシュする。
   ③ 台風   発生中の台風の実況・進路予報（気象庁 防災情報JSON）＋ 各モデルの予報・アンサンブル（UCAR RAL / WeatherNext など）。
            強風域(15m/s以上)の最大半径が 500km以上=大型、800km以上=超大型（気象庁の階級）。
@@ -1130,24 +1130,15 @@ body[data-tab=ob] #s-ob,body[data-tab=wn] #s-wn,body[data-tab=ty] #s-ty{display:
 .btn.on{background:var(--acc);color:#04121f;font-weight:700}
 .btn:active{filter:brightness(1.25)}
 .btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.in,.f input:not([type=checkbox]),.f select,.sel select,#oStep{background:var(--s2);border:1px solid transparent;border-radius:10px;padding:9px 12px}
+.in,.sel select,#oStep{background:var(--s2);border:1px solid transparent;border-radius:10px;padding:9px 12px}
 .pill{font-size:11px;color:var(--sub);border:1px solid var(--line);border-radius:99px;padding:2px 10px;white-space:nowrap}
 .pill b{color:var(--acc);font-weight:700}
 .chk{display:flex;align-items:center;gap:8px;font-size:13px;margin-top:10px}
 
-header{padding:12px 14px 6px;display:grid;gap:10px;flex:none}
-.chip.on{background:var(--acc);color:#04121f;font-weight:700}
-.sort{display:grid;grid-template-columns:1fr auto;gap:8px}
 summary{cursor:pointer;color:var(--sub);font-size:13px;padding:2px 0}
-.f label.chk{flex-direction:row;align-items:center;gap:6px;margin-top:0}
-#meta{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:2px 16px 8px;flex:none}
-#list{flex:1;overflow:auto;overscroll-behavior:contain;margin:0;padding:0 10px 10px;list-style:none;display:grid;gap:6px;align-content:start;-webkit-overflow-scrolling:touch;min-height:0}
-#list li{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:12px;background:transparent;cursor:pointer;border:1px solid transparent}
-#list li:hover{background:var(--s2)}#list li.on{background:var(--s2);border-color:var(--acc)}
-footer{padding:8px 16px;border-top:1px solid var(--line);color:var(--sub);font-size:11px;flex:none}
 
 /* ---- めずらしい台風・移動距離 ---- */
-.sz,.t em.sz{display:inline-block;font-style:normal;font-size:10px;font-weight:700;margin-left:6px;padding:0 6px;border-radius:99px;background:transparent;border:1px solid var(--c);color:var(--c);vertical-align:1px}
+.sz{display:inline-block;font-style:normal;font-size:10px;font-weight:700;margin-left:6px;padding:0 6px;border-radius:99px;background:transparent;border:1px solid var(--c);color:var(--c);vertical-align:1px}
 .rk{display:grid;gap:4px;margin:0;padding:0;list-style:none}
 .rk li{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--s2);border-radius:10px;padding:8px 12px;font-size:13px;cursor:pointer}
 .rk li b{font:700 14px "Space Grotesk",system-ui,sans-serif;white-space:nowrap}
@@ -1173,25 +1164,30 @@ footer{padding:8px 16px;border-top:1px solid var(--line);color:var(--sub);font-s
 .mk.cur{box-shadow:0 0 0 2px #0a1120,0 0 0 5px var(--r),0 0 0 7px #fff}
 .mlab2{background:none;border:0}
 .sum{background:var(--s2);border-radius:10px;padding:8px 12px;font-size:13px;line-height:1.7}.sum b{display:block;font-size:12px;color:var(--sub);margin-bottom:2px}
-.anr b{display:block;font-size:13px}.anr small{display:block;color:var(--sub);font-size:11px;line-height:1.5;font-variant-numeric:tabular-nums}.anr.on{outline:2px solid var(--acc)}
 .mlab2 span{position:absolute;left:12px;top:-9px;padding:0 5px;border-radius:5px;background:rgba(10,17,32,.88);color:#fff;font:700 11px system-ui,sans-serif;white-space:nowrap}
 
 .kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
 .kpi div{background:var(--s2);border-radius:10px;padding:8px 12px}.kpi .w2{grid-column:span 2}
 .kpi small{display:block;color:var(--sub);font-size:11px}
 .kpi strong{font:700 20px "Space Grotesk",system-ui,sans-serif}.kpi strong span{font-size:11px;font-weight:400;color:var(--sub);margin-left:3px}
-.ch .hl{fill:#fff;opacity:0}.ch .hl.on{opacity:.12}
-.rd{min-height:46px;margin-top:6px;font-size:12px;line-height:1.8}.rd b{font-size:13px}.rd .btn{margin-left:6px;vertical-align:middle}
 .tb{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
 .tb th{color:var(--sub);font-weight:400;font-size:11px;text-align:right;padding:4px 6px}.tb td{text-align:right;padding:7px 6px;border-top:1px solid var(--line)}
 .tb th:first-child,.tb td:first-child{text-align:left}
 
+/* ---- 折りたたみブロック（台風タブ） ---- */
+details.blk{border-top:1px solid var(--line);margin-top:14px}
+details.blk>summary{display:flex;justify-content:space-between;align-items:center;list-style:none;padding:12px 2px;font-size:13px;font-weight:700;color:var(--ink);letter-spacing:.02em}
+details.blk>summary::-webkit-details-marker{display:none}
+details.blk>summary::after{content:"";width:7px;height:7px;border-right:2px solid var(--sub);border-bottom:2px solid var(--sub);transform:rotate(45deg);margin-right:4px;transition:transform .15s}
+details.blk[open]>summary::after{transform:rotate(-135deg)}
+details.blk>.bd{padding-bottom:4px}
+.bd>.sh:first-child{margin-top:4px}
+.pill .wb{margin-right:4px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}.top .note{margin:0;min-width:0}
+
 /* ---- 地図まわり ---- */
 main{position:relative;min-height:0}#map{height:100%;background:#0b1522;z-index:0}
 .card{position:absolute;z-index:500;background:rgba(16,26,48,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:var(--r)}
-.chart{flex:1;min-width:0;position:relative}
-.chart svg{display:block;width:100%;height:40px}
-.acts .btn{height:42px;padding:0}.mo{display:none}
 #fit{position:absolute;z-index:600;left:14px;top:14px;height:38px;padding:0 14px;border:1px solid var(--line);border-radius:12px;background:rgba(16,26,48,.92);font-size:13px;cursor:pointer}
 #legend{left:14px;bottom:24px;padding:8px 12px;font-size:12px}
 #legend div{display:flex;gap:8px;align-items:center}#legend i{width:14px;height:4px;border-radius:2px;display:inline-block;flex:none}
@@ -1219,7 +1215,6 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:ta
 .wr.l1{--wc:#fbbf24}.wr.l2{--wc:#ef4444}.wr.l3{--wc:#a855f7}.wr.l4{--wc:#f1f5f9}
 .wb{font-style:normal;font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px;white-space:nowrap}
 .wb.l1{background:#fbbf24;color:#1a1200}.wb.l2{background:#ef4444;color:#fff}.wb.l3{background:#a855f7;color:#fff}.wb.l4{background:#f1f5f9;color:#1e1b4b}
-.lvk{color:var(--sub);font-size:11px;display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 6px}.lvk .wb{font-size:10px;padding:0 7px}
 
 /* ---- スマホ ---- */
 @media(max-width:760px){
@@ -1227,19 +1222,13 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:ta
  body{display:block}
  #tabs{left:0;right:0;top:auto;bottom:0;width:auto;height:var(--tb);padding:6px 10px calc(6px + env(safe-area-inset-bottom));border-right:0;border-bottom:0;border-top:1px solid var(--line)}
  main{position:fixed;inset:0 0 var(--tb) 0}
- aside{position:fixed;left:0;right:0;bottom:var(--tb);height:calc(86dvh - var(--tb));z-index:1500;padding-top:0;border:0;border-top:1px solid var(--line);border-radius:20px 20px 0 0;box-shadow:0 -12px 40px #000a;overscroll-behavior:contain}
- aside{height:auto;max-height:46dvh;transform:none;z-index:900;box-shadow:0 -8px 30px #0008}
+ aside{position:fixed;left:0;right:0;bottom:var(--tb);height:auto;max-height:46dvh;z-index:900;padding-top:0;border:0;border-top:1px solid var(--line);border-radius:20px 20px 0 0;box-shadow:0 -8px 30px #0008;overscroll-behavior:contain}
  .sec .pad{padding-top:14px}
- header{max-height:52%;overflow:auto;padding:0 12px 8px;gap:10px;overscroll-behavior:contain}
- #meta{padding:4px 14px 8px}
- #list{padding:0 8px 16px;gap:4px}#list li{padding:14px 12px;min-height:64px}.t b{font-size:15px}
- #play{height:44px}.pl{margin-top:8px}.chart svg{height:26px}#scrub{height:28px}
  .leaflet-control-zoom,.leaflet-control-attribution{display:none}
  #legend{left:10px;top:10px;bottom:auto;display:flex;gap:10px;padding:6px 10px;font-size:11px;max-width:calc(100% - 100px);overflow-x:auto;scrollbar-width:none;align-items:center}
  #legend div{flex:none;gap:4px}#legend .lgh{margin-top:0}
  #fit{left:auto;right:10px;top:10px;height:40px}
 }
-@media(max-width:760px) and (max-height:520px){.st,.chart svg{display:none}}
 </style></head><body data-tab="ob">
 
 <nav id="tabs" role="tablist" aria-label="画面の切り替え">
@@ -1249,35 +1238,25 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:ta
 </nav>
 <aside>
 
- <!-- 画面1: 予報 -->
  <!-- 画面1: 観測（アメダス） -->
   <section id="s-ob" class="sec">
-   <div class="pad">
-    <div class="rw"><span class="lb">範囲</span><select id="lvRng" class="in" style="flex:1;min-width:0" aria-label="観測値の範囲"><option value="auto" id="lvRngA" selected>自動（台風の強さ・大きさに合わせる）</option><option value="0">全国</option><option value="300">台風の中心から300km以内</option><option value="500">台風の中心から500km以内</option><option value="700">台風の中心から700km以内</option><option value="1000">台風の中心から1000km以内</option><option value="1500">台風の中心から1500km以内</option></select><button type="button" class="btn lrf">更新</button></div>
-    <div id="lvRngN" class="note"></div>
-    <div class="lnote note"></div>
-   </div>
+   <div class="pad"><div class="top"><div class="lnote note"></div><button type="button" class="btn lrf">更新</button></div></div>
    <div class="scroll">
-    <h3 class="sh" id="lvObsT">観測（アメダス）— タップで地図に表示</h3>
+    <h3 class="sh">全国の最大値（タップで地図に表示）</h3>
     <div class="mets" id="lvMet"></div>
     <h3 class="sh" id="lvTopT">上位10地点（タップで地図へ）</h3><ul class="rk" id="lvTop"></ul>
-    <div class="note" style="margin-top:16px">出典: 気象庁（防災情報・アメダス・警報注意報）。時刻は日本時間。観測値は速報で、欠測や品質の低い値は除いています。5分ごとに自動で更新します。波の高さは波浪モデルの推計値（Weather data by Open-Meteo.com）。地図タイル: Esri。</div>
+    <div class="note" style="margin-top:16px">出典: 気象庁（アメダス）。観測値は速報で、欠測や品質の低い値は除いています。5分ごとに自動で更新します。波の高さは波浪モデルの推計値（Weather data by Open-Meteo.com）。地図タイル: Esri。</div>
    </div>
   </section>
 
   <!-- 画面2: 警報・注意報 -->
   <section id="s-wn" class="sec">
-   <div class="pad">
-    <div class="btns"><button type="button" class="btn lrf">更新</button></div>
-    <div class="lnote note"></div>
-   </div>
+   <div class="pad"><div class="top"><div class="lnote note"></div><button type="button" class="btn lrf">更新</button></div></div>
    <div class="scroll">
     <div id="lvWsum" class="wsum"></div>
-    <div class="lvk"><span><i class="wb l4">特別警報</i></span><span><i class="wb l3">危険警報</i></span><span><i class="wb l2">警報</i></span><span><i class="wb l1">注意報</i></span></div>
     <div class="note">地図の薄い塗りは発表中の警報・注意報です（拡大すると市町村等ごとに細かくなります）。</div>
-    <label class="chk"><input type="checkbox" id="lvAll">台風に関係しない種類（雷・濃霧・乾燥など）も表示</label>
     <div id="lvWarn"></div>
-    <div class="note" style="margin-top:16px">出典: 気象庁（防災情報・アメダス・警報注意報）。時刻は日本時間。観測値は速報で、欠測や品質の低い値は除いています。5分ごとに自動で更新します。波の高さは波浪モデルの推計値（Weather data by Open-Meteo.com）。地図タイル: Esri。</div>
+    <div class="note" style="margin-top:16px">出典: 気象庁（警報・注意報）。5分ごとに自動で更新します。地図タイル: Esri。</div>
    </div>
   </section>
 
@@ -1288,26 +1267,36 @@ table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:ta
     <div class="lnote note"></div>
    </div>
    <div class="scroll">
-    <h3 class="sh">台風の実況（気象庁）</h3><div id="lvNow"></div>
-    <h3 class="sh">進路予報（気象庁）</h3><div id="lvFc"></div>
-    <div class="note" style="margin-top:6px">白の破線＝これまでの進路、白の実線と円＝予報（円の中に台風の中心が入る確率は70%）、赤い帯＝暴風警戒域。実況の赤い破線＝暴風域、黄色の破線＝強風域。</div>
-    <h3 class="sh">各モデルの予報・アンサンブル</h3>
-    <div class="pad" style="padding:0">
-   <div class="sel"><select id="fsel" aria-label="予報を見る台風"></select></div>
-   <div class="rw"><span class="lb">予報時間</span><button type="button" class="btn sm" id="fplay" aria-label="再生" style="padding:0 10px">▶</button><input id="tau" type="range" min="0" max="120" step="6" value="48" aria-label="予報時間"><b id="tv">+48h</b></div>
-   <div id="fnote" class="note"></div></div>
-    
-   <div id="fsum" class="sum" hidden></div>
-   <h3 class="sh">選んだ時間の予報（位置と強さ）</h3><div id="pos"></div>
-   <h3 class="sh">強さの表示</h3>
-   <div class="btns"><button type="button" class="btn on" id="oInlay">線を強さで色分け</button><button type="button" class="btn" id="oNum">風速を数字で</button>
-    <select id="oStep" aria-label="印の間隔"><option value="12">12時間ごと</option><option value="24" selected>24時間ごと</option></select></div>
-   <div class="note" style="margin-top:6px">進路線は、極細の外枠の色が予報の出どころ（モデル）、内側の実線の色が強さです。印も同じで、中の色と大きさが強さ、外側の輪がモデル。円は単独モデル、菱形はアンサンブル平均。ボタンを切ると線はモデルの色だけになります。</div>
-   <h3 class="sh">ソース（タップで表示・非表示）</h3><div id="fchips"></div>
-   <label class="chk"><input type="checkbox" id="mem" checked>アンサンブルの各メンバーの進路も表示</label>
-   <h3 class="sh">詳しく見る</h3>
-   <div class="btns"><button type="button" class="btn" id="tbl">位置のばらつき表</button><button type="button" class="btn" id="int">強さ予報のグラフ</button></div>
-   <div id="fsrc" class="note" style="margin-top:16px"></div>
+    <details class="blk" open><summary>台風の実況（気象庁）</summary><div class="bd">
+     <div id="lvNow"></div>
+    </div></details>
+
+    <details class="blk" open><summary>進路予報（気象庁）</summary><div class="bd">
+     <div id="lvFc"></div>
+     <div class="note" style="margin-top:6px">白の破線＝これまでの進路、白の実線と円＝予報（円の中に台風の中心が入る確率は70%）、赤い帯＝暴風警戒域。実況の赤い破線＝暴風域、黄色の破線＝強風域。</div>
+    </div></details>
+
+    <details class="blk" open><summary>各モデルの予報・アンサンブル</summary><div class="bd">
+     <div class="pad" style="padding:0">
+      <div class="sel"><select id="fsel" aria-label="予報を見る台風"></select></div>
+      <div class="rw"><span class="lb">予報時間</span><button type="button" class="btn sm" id="fplay" aria-label="再生" style="padding:0 10px">▶</button><input id="tau" type="range" min="0" max="120" step="6" value="48" aria-label="予報時間"><b id="tv">+48h</b></div>
+      <div id="fnote" class="note"></div>
+     </div>
+     <div id="fsum" class="sum" hidden></div>
+     <h3 class="sh">選んだ時間の予報（位置と強さ）</h3><div id="pos"></div>
+     <div class="btns" style="margin-top:12px"><button type="button" class="btn" id="tbl">位置のばらつき表</button><button type="button" class="btn" id="int">強さ予報のグラフ</button></div>
+    </div></details>
+
+    <details class="blk"><summary>表示の設定（強さ・ソース）</summary><div class="bd">
+     <h3 class="sh">強さの表示</h3>
+     <div class="btns"><button type="button" class="btn on" id="oInlay">線を強さで色分け</button><button type="button" class="btn" id="oNum">風速を数字で</button>
+      <select id="oStep" aria-label="印の間隔"><option value="12">12時間ごと</option><option value="24" selected>24時間ごと</option></select></div>
+     <div class="note" style="margin-top:6px">進路線は、極細の外枠の色が予報の出どころ（モデル）、内側の実線の色が強さです。印も同じで、中の色と大きさが強さ、外側の輪がモデル。円は単独モデル、菱形はアンサンブル平均。ボタンを切ると線はモデルの色だけになります。</div>
+     <h3 class="sh">ソース（タップで表示・非表示）</h3><div id="fchips"></div>
+     <label class="chk"><input type="checkbox" id="mem" checked>アンサンブルの各メンバーの進路も表示</label>
+    </div></details>
+
+    <div id="fsrc" class="note" style="margin-top:16px"></div>
    </div>
   </section>
 
@@ -1335,6 +1324,7 @@ const szK=km=>km?SZ.find(z=>km>=z[0])||null:null;
 const szJ=(km,lb)=>{if(typeof lb==="string"&&lb.trim()){const t=lb.trim();if(t.indexOf("超大型")>=0)return SZ[0];if(t.indexOf("大型")>=0)return SZ[1];if(t==="-")return null}return szK(km)};
 const szTag=(km,lb)=>{const z=szJ(km,lb);return z?`<em class="sz" style="--c:${z[2]}">${z[1]}</em>`:""};
 const szLg=()=>`<div class="lgh">大きさ（強風域の半径）</div>`+SZ.slice().reverse().map(z=>`<div><i style="background:${z[2]}"></i>${z[1]} ${z[0]}km以上</div>`).join("");
+const TYA="UCAR RAL / Google DeepMind";   // 台風タブでだけ地図の出典に足す
 const initHash=location.hash.slice(1);
 const ALIAS={lv:"ob",fc:"ty"};   // 旧URL(#lv / #fc)
 const initTab=(h=>TABS[h]?h:(TABS[tabMem.get()]?tabMem.get():"ob"))(ALIAS[initHash]||initHash);
@@ -1343,7 +1333,7 @@ let tab="";
 const map=L.map("map",{worldCopyJump:true,zoomControl:false}).setView([25,135],4);
 L.control.zoom({position:"bottomright"}).addTo(map);
 const ESRI="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/";
-L.tileLayer(ESRI+"World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles © Esri — Esri, DeLorme, NAVTEQ | 気象庁 / IBTrACS (NOAA) / UCAR RAL / Google DeepMind",maxZoom:12}).addTo(map);
+L.tileLayer(ESRI+"World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles © Esri — Esri, DeLorme, NAVTEQ | 気象庁",maxZoom:12}).addTo(map);
 map.createPane("labels").style.zIndex=450;map.getPane("labels").style.pointerEvents="none";
 L.tileLayer(ESRI+"World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}",{pane:"labels",maxZoom:12}).addTo(map);
 addEventListener("resize",()=>map.invalidateSize());
@@ -1361,7 +1351,7 @@ function setTab(t){
   tab=t;document.body.dataset.tab=t;tabMem.set(t);
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.t==t)));
   if(pg)views[pg]={c:map.getCenter(),z:map.getZoom()};
-  if(t=="ty")FC.show();else FC.hide();
+  if(t=="ty"){FC.show();map.attributionControl.addAttribution(TYA)}else{FC.hide();map.attributionControl.removeAttribution(TYA)}
   LV.show(t);
   map.invalidateSize();
   const v=views[t];
@@ -1584,7 +1574,6 @@ const MET={
  r3:{n:"3時間雨量",s:"3時間雨量",u:"mm",i:9,lim:[0,10,30,50,100,150,200,300]},
  r24:{n:"24時間雨量",s:"24時間雨量",u:"mm",i:10,lim:[0,10,50,100,200,300,400,500]},
  wave:{n:"波の高さ（推計）",s:"波の高さ（推計）",u:"m",i:11,lim:[0,.5,1,2,3,4,6,8]}};   // 波はアメダスの観測ではなく波浪モデルの推計。海岸近くの地点のみ
-const REL=new Set(["03","04","05","07","08","09","10","15","16","18","19","29","33","34","35","37","38","39","43","44","45","47","48","49"]);   // 台風に関係する種類（暴風・大雨・氾濫・土砂災害・波浪・高潮・強風）
 // 警報コード → 段階（1=注意報 2=警報 3=危険警報 4=特別警報）。サーバーの w_level と同じ
 const wlv=c=>{const n=+c;return n>=32&&n<=39?4:n>=42&&n<=49?3:n>=2&&n<=9?2:1};
 // 塗りの色（薄く）。段階: [色, 塗りの濃さ]
@@ -1678,32 +1667,13 @@ function drawOne(s){
 // ---- 観測 ----
 function tip(r){return `<b>${esc(r[1])}</b>`+[r[4]!=null?`風 ${fv(r[4])}m/s${r[5]!=null?"（"+D16[r[5]]+"）":""}`:"",r[6]!=null?`最大瞬間 ${fv(r[6])}m/s`:"",
   r[7]!=null?`海面気圧 ${fv(r[7])}hPa`:"",r[8]!=null?`1時間雨量 ${fv(r[8])}mm`:"",r[9]!=null?`3時間雨量 ${fv(r[9])}mm`:"",r[10]!=null?`24時間雨量 ${fv(r[10])}mm`:"",r[11]!=null?`波の高さ ${fv(r[11])}m（推計）`:""].filter(Boolean).map(x=>"<br>"+x).join("")}
-// 範囲: 台風が発生中で距離を選んだ時だけ、台風の中心からその距離内の地点に絞る（0=全国）
-// 観測値の範囲「自動」: 強風域の最大半径（無ければ強さから推定）に、強いほど大きい係数をかけて、近い段階(km)へ切り上げる。超えたら上限の1500km
-const RSTEP=[300,500,700,1000,1500];
-function autoR0(s){const n=s.now,w=n.wind==null?null:Math.round(n.wind),g=n.r&&n.r[4]?n.r[4]:null,
-  base=g??(w==null||w<33?300:w<44?350:w<54?400:450),fac=w==null||w<33?1.2:w<44?1.3:w<54?1.4:1.5,need=Math.max(300,base*fac);
-  return RSTEP.find(x=>x>=need)||RSTEP[RSTEP.length-1]}   // 台風の強さ・大きさだけで決めた範囲（自動は最大でも1500km。全国にはしない）
-// 自動の範囲は台風の強さ・大きさだけで決める（警報・注意報の発表状況では変えない）
-const autoR=autoR0;
-const rv=s=>{const v=$("#lvRng").value;return v=="auto"?autoR(s):+v};
-const rngAll=()=>{const r=cur().map(s=>[s,rv(s)]);return r.some(x=>!x[1])?[]:r};   // [[台風, 半径km]]。空なら全国
-const rng=()=>{const r=rngAll();return r.length?Math.max(...r.map(x=>x[1])):0};
-function rngInfo(){const c=cur(),s=c[0],A=$("#lvRngA"),N=$("#lvRngN");
-  if(!s){A.textContent="自動（台風の強さ・大きさに合わせる）";N.textContent="";return}
-  if(c.length>1){A.textContent=`自動（${c.map(t=>{const r=autoR(t);return `${t.no}号 ${r?r+"km":"全国"}`}).join("・")}）`;N.textContent=$("#lvRng").value=="auto"?"各台風の強さ・大きさから範囲を決め、どれかの台風の範囲に入る地点の最大値を見ます。":"";return}
-  const R=autoR(s),n=s.now,w=n.wind==null?null:Math.round(n.wind),g=n.r&&n.r[4]?n.r[4]:null,z=szJ(g,n.sz);
-  A.textContent=`自動（${R?`台風の中心から${R}km以内`:"全国"}）`;
-  N.textContent=$("#lvRng").value=="auto"?`強さ「${w!=null?cls(w):"不明"}」・大きさ「${z?z[1]:g?"大型未満":"不明"}」${g?`（強風域 最大${Math.round(g)}km）`:""}から、初期の範囲を${R?R+"km以内":"全国"}にしています。強いほど、大きいほど広く見ます。`:""}
-function rowsOf(m){if(!obs)return[];const rs=rngAll();
-  return obs.rows.filter(r=>r[m.i]!=null&&(m.all||r[m.i]>0)&&(!rs.length||rs.some(([s,R])=>km([s.now.lat,s.now.lon],[r[2],r[3]])<=R))).sort((a,b)=>xv(b[m.i],m)-xv(a[m.i],m))}   // 強い順
+function rowsOf(m){if(!obs)return[];
+  return obs.rows.filter(r=>r[m.i]!=null&&(m.all||r[m.i]>0)).sort((a,b)=>xv(b[m.i],m)-xv(a[m.i],m))}   // 強い順
 function drawObs(){
   obsL.clearLayers();mk={};if(!obs)return;const m=MET[met];
-  rngAll().forEach(([s,R])=>L.circle([s.now.lat,s.now.lon],{pane:"lvobs",radius:R*1000,color:"#94a3b8",weight:1.2,dashArray:"4 6",fill:false,interactive:false}).addTo(obsL));
   rowsOf(m).slice().reverse().forEach(r=>{const b=bin(r[m.i],m),c=L.circleMarker([r[2],r[3]],{renderer:cv,radius:3+b*1.3,color:"#0a1120",weight:1,fillColor:COLS[b],fillOpacity:.92}).bindTooltip(tip(r),{direction:"top"});
     c.addTo(obsL);mk[r[0]]=c})}
 function metHTML(){
-  rngInfo();const R=rng(),multi=rngAll().length>1;$("#lvObsT").textContent=R?(multi?`観測（アメダス）— 各台風の中心から${$("#lvRng").value=="auto"?"自動の範囲":R+"km"}以内の最大値`:`観測（アメダス）— 台風の中心から${R}km以内の最大値`):"観測（アメダス）— 全国の最大値";$("#lvRng").disabled=!cur().length;
   if(!obs)return`<p class="note" style="grid-column:span 2">観測値を取得できませんでした。「更新」で再試行してください</p>`;
   return Object.entries(MET).map(([k,m])=>{const r=rowsOf(m)[0];
     return `<button type="button" class="mt${k==met?" on":""}" data-m="${k}"><small>${m.s}</small><strong>${r?fv(r[m.i]):"-"}<span>${r?m.u:""}</span></strong><em>${r?esc(r[1]):"観測なし"}</em></button>`}).join("")}
@@ -1715,11 +1685,10 @@ function topHTML(){
 // ---- 警報・注意報 ----
 function warnHTML(){
   if(!wrn){$("#lvWsum").innerHTML="";return`<p class="note">警報・注意報を取得できませんでした。「更新」で再試行してください</p>`}
-  const all=$("#lvAll").checked,
-    rows=wrn.areas.map(o=>{const w=o.w.filter(x=>all||REL.has(x.c));return w.length?{...o,w,lv:Math.max(...w.map(x=>x.lv))}:null}).filter(Boolean).sort((a,b)=>b.lv-a.lv||b.n-a.n||(a.code<b.code?-1:1));
+  const rows=wrn.areas.filter(o=>o.w.length).map(o=>({...o,lv:Math.max(...o.w.map(x=>x.lv))})).sort((a,b)=>b.lv-a.lv||b.n-a.n||(a.code<b.code?-1:1));
   const cnt=l=>rows.filter(o=>o.lv==l).length;
-  $("#lvWsum").innerHTML=[[4,"特別警報"],[3,"危険警報"],[2,"警報"],[1,"注意報"]].map(([l,t])=>`<span class="pill"><b>${cnt(l)}</b> ${t}（地域数）</span>`).join("");
-  if(!rows.length)return`<p class="note">現在、発表中の${all?"":"台風に関係する"}警報・注意報はありません</p>`;
+  $("#lvWsum").innerHTML=[[4,"特別警報"],[3,"危険警報"],[2,"警報"],[1,"注意報"]].map(([l,t])=>`<span class="pill"><em class="wb l${l}">${t}</em><b>${cnt(l)}</b> 地域</span>`).join("");
+  if(!rows.length)return`<p class="note">現在、発表中の警報・注意報はありません</p>`;
   return rows.map(o=>`<div class="wr l${o.lv}"><b>${esc(o.name)}</b>${o.w.map(x=>`<em class="wb l${x.lv}">${esc(x.name)}</em>`).join("")}<small>${o.n?o.n+"市町村等":""}</small></div>`).join("")}
 // ---- 描画まとめ ----
 function renderStorm(){$("#lvNow").innerHTML=nowHTML();$("#lvFc").innerHTML=fcHTML();drawStorm();apply()}
@@ -1728,14 +1697,13 @@ function renderObs(){$("#lvMet").innerHTML=metHTML();$("#lvTop").innerHTML=topHT
 const geo={c10:null,rel:null,c20:{}},geoP={};
 const gj=n=>geoP[n]||(geoP[n]=jget("/api/live/geo/"+n).catch(e=>{delete geoP[n];throw e}));
 let wnSeq=0;
-function wnLevel(codes,all){let m=0;for(const c of codes||[])if(all||REL.has(c))m=Math.max(m,wlv(c));return m}
-function wnLayer(data,tbl,all){
-  return L.geoJSON(data,{filter:f=>wnLevel(tbl[(f.properties||{}).code],all)>0,style:f=>{
-    const l=wnLevel(tbl[f.properties.code],all),[c,a]=WNC[l];
+function wnLevel(codes){let m=0;for(const c of codes||[])m=Math.max(m,wlv(c));return m}
+function wnLayer(data,tbl){
+  return L.geoJSON(data,{filter:f=>wnLevel(tbl[(f.properties||{}).code])>0,style:f=>{
+    const l=wnLevel(tbl[f.properties.code]),[c,a]=WNC[l];
     return {pane:"lvwn",renderer:cvw,interactive:false,noClip:true,color:c,weight:f.properties.islandBold?5:.8,opacity:l==4?.9:.55,fillColor:c,fillOpacity:a,lineJoin:"round"}}})}
 async function drawWarn(){
   const my=++wnSeq;wnL.clearLayers();if(!wrn||!wrn.c10)return;
-  const all=$("#lvAll").checked;
   try{
     if(!geo.c10)geo.c10=await gj("class10s");
     if(my!=wnSeq)return;
@@ -1749,8 +1717,8 @@ async function drawWarn(){
       use20=need;
     }
     wnL.clearLayers();
-    if(use20)use20.forEach(i=>wnLayer(geo.c20[i],wrn.c20||{},all).addTo(wnL));
-    else wnLayer(geo.c10,wrn.c10,all).addTo(wnL);
+    if(use20)use20.forEach(i=>wnLayer(geo.c20[i],wrn.c20||{}).addTo(wnL));
+    else wnLayer(geo.c10,wrn.c10).addTo(wnL);
   }catch(e){if(my==wnSeq)wnL.clearLayers()}}
 let wnT=null;
 map.on("moveend",()=>{if(!active||!vis.wrn)return;clearTimeout(wnT);wnT=setTimeout(drawWarn,250)});
@@ -1763,11 +1731,14 @@ function legendHTML(){
   return `<div class="lgh">${m.n}（${m.u}）</div>`+COLS.map((c,i)=>`<div><i class="dot" style="--s:${6+i*1.3}px;background:${c}"></i>${lb[i]}</div>`).join("")}
 function legend2(){if(tab!="ty")$("#legend").innerHTML=legendHTML()}
 function setNote(t){document.querySelectorAll(".lnote").forEach(e=>e.textContent=t)}
-function noteTimes(){const a=[];if(cur().length)a.push(`台風 ${[...new Set(cur().map(x=>T(x.now.t)))].join("・")}`);if(obs)a.push(`アメダス ${T(obs.t)}`);if(wrn&&wrn.t)a.push(`警報 ${T(wrn.t)}`);if(wv&&wv.t)a.push(`波（推計） ${T(wv.t)}`);
-  setNote(a.length?`${a.join(" ／ ")}（日本時間）`:"データを取得できませんでした。「更新」で再試行してください")}
-function rngB(){const b=L.latLngBounds([]);rngAll().forEach(([s,R])=>{const dl=R/111,dn=dl/Math.max(.2,Math.cos(s.now.lat*Math.PI/180));b.extend([[s.now.lat-dl,s.now.lon-dn],[s.now.lat+dl,s.now.lon+dn]])});return b}
+function noteTimes(){const a=[];
+  if(mode=="ty"){if(cur().length)a.push(`台風 ${[...new Set(cur().map(x=>T(x.now.t)))].join("・")}`)}
+  else if(mode=="wn"){if(wrn&&wrn.t)a.push(`警報 ${T(wrn.t)}`)}
+  else{if(obs)a.push(`アメダス ${T(obs.t)}`);if(wv&&wv.t)a.push(`波（推計） ${T(wv.t)}`)}
+  const ok=mode=="ty"||(mode=="wn"?wrn:obs);   // 台風タブで台風が無い時は、取得失敗ではないので何も出さない
+  setNote(a.length?`${a.join(" ／ ")}（日本時間）`:(ok?"":"データを取得できませんでした。「更新」で再試行してください"))}
 function fit(){const ll=[];
-  if(mode!="ty"){const b=mode=="ob"&&rng()?rngB():null;if(b&&b.isValid())map.fitBounds(b,pd());else map.fitBounds([[22,122],[46,148]],pd());return}
+  if(mode!="ty"){map.fitBounds([[22,122],[46,148]],pd());return}
   cur().forEach(s=>{ll.push([s.now.lat,s.now.lon]);s.past.forEach(p=>ll.push(p));s.fc.forEach(p=>{ll.push([p.lat,p.lon]);if(p.circle){const d=p.circle/111;ll.push([p.lat+d,p.lon+d],[p.lat-d,p.lon-d])}})})
   if(ll.length)map.fitBounds(L.latLngBounds(ll),pd());else map.fitBounds([[22,122],[46,148]],pd())}
 async function loadAll(manual){
@@ -1783,18 +1754,16 @@ async function loadAll(manual){
   renderStorm();renderObs();renderWarn();noteTimes();
   if(active&&!fitted){fitted=true;fit()}}
 // ---- 操作 ----
-$("#lsel").onchange=e=>{sel=+e.target.value;renderStorm();renderObs();noteTimes();fit();const s=S[sel];if(s&&s.tc)FC.pick(s.tc)};
-function pick(tc){const i=S.findIndex(s=>s.tc==tc);if(i>=0&&i!=sel){sel=i;$("#lsel").value=String(i);renderStorm();renderObs();noteTimes()}}
+$("#lsel").onchange=e=>{sel=+e.target.value;renderStorm();noteTimes();fit();const s=S[sel];if(s&&s.tc)FC.pick(s.tc)};
+function pick(tc){const i=S.findIndex(s=>s.tc==tc);if(i>=0&&i!=sel){sel=i;$("#lsel").value=String(i);renderStorm();noteTimes()}}
 document.querySelectorAll(".lrf").forEach(b=>b.onclick=()=>{loadAll(true);if(mode=="ty")FC.refresh()});
-$("#lvAll").onchange=renderWarn;
-$("#lvRng").onchange=()=>{renderObs();if(rng()&&active&&mode=="ob"){const b=rngB();if(b.isValid())map.fitBounds(b,pd())}};
 $("#lvMet").onclick=e=>{const b=e.target.closest("[data-m]");if(!b)return;met=b.dataset.m;renderObs()};
 $("#lvTop").onclick=e=>{const li=e.target.closest("[data-st]");if(!li)return;const c=mk[li.dataset.st];if(!c)return;
   apply();map.setView(c.getLatLng(),Math.max(map.getZoom(),8));c.openTooltip()};
 $("#lvFc").onclick=e=>{const tr=e.target.closest("[data-fi]");if(!tr)return;const p=S[+tr.dataset.si].fc[+tr.dataset.fi];map.setView([p.lat,p.lon],Math.max(map.getZoom(),5))};
 function show(m){mode=m;active=true;
   [vis.trk,vis.rad,vis.obs,vis.wrn]={ob:[0,0,1,0],wn:[0,0,0,1],ty:[1,1,0,0]}[m].map(Boolean);
-  apply();if(vis.wrn)drawWarn();
+  apply();if(vis.wrn)drawWarn();if(loadedAt)noteTimes();
   if(!ready){ready=true;loadAll()}else if(Date.now()-loadedAt>4*60e3)loadAll();
   clearInterval(timer);timer=setInterval(()=>{if(active&&!document.hidden)loadAll()},5*60e3)}
 function hide(){active=false;clearInterval(timer);apply()}
