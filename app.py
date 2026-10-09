@@ -275,7 +275,11 @@ app = FastAPI(title="AMeDAS hub", lifespan=lifespan)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
-@app.get("/", response_class=HTMLResponse)
+@app.api_route(
+    "/",
+    methods=["GET", "HEAD"],
+    response_class=HTMLResponse,
+)
 def index():
     return PAGE
 
